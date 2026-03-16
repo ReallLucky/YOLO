@@ -47,7 +47,7 @@ def load_model():
 model = load_model()
 
 # =====================================================
-# EMAIL FUNCTION
+# EMAIL
 # =====================================================
 def send_email(entry):
     recipient = entry.get("email", "")
@@ -92,7 +92,10 @@ def detect_objects(image):
     classes = result.boxes.cls.tolist()
     objects = list(set([names[int(c)] for c in classes]))
     confidence = float(np.max(result.boxes.conf.tolist())) if len(result.boxes.conf) else 0
-    return objects, confidence
+    # Annotated image
+    annotated_image = result.plot()  # returns np.array
+    annotated_image = Image.fromarray(annotated_image)
+    return objects, confidence, annotated_image
 
 # =====================================================
 # IMAGE HELPERS
@@ -171,24 +174,13 @@ def should_use_topbar():
 
 st.markdown("""
 <style>
-/* HIDE DEFAULT UI */
-header, #MainMenu, footer {visibility: hidden;}
+header, #MainMenu, footer {visibility:hidden;}
 [data-testid="stToolbar"], [data-testid="stDecoration"] {display:none;}
-
-/* TOPBAR */
-.topbar{
-position:fixed;top:0;left:0;width:100%;height:60px;
-background:rgba(20,20,20,0.9);
-backdrop-filter:blur(20px);
-display:none;align-items:center;justify-content:space-around;
-border-bottom:1px solid #222; z-index:999;
-}
+.topbar{position:fixed;top:0;left:0;width:100%;height:60px;background:rgba(20,20,20,0.9);backdrop-filter:blur(20px);display:none;align-items:center;justify-content:space-around;border-bottom:1px solid #222; z-index:999;}
 .topbar a{color:white !important;text-decoration:none;font-weight:700;font-size:18px;}
-[data-testid="stAppViewContainer"]{background: radial-gradient(circle at bottom,#000033 0%,#000000 60%);}
 .sidebar{position:fixed;top:0;left:0;height:100vh;width:70px;background:rgba(20,20,20,0.85);backdrop-filter:blur(20px);transition:0.3s;overflow:hidden;border-right:1px solid #222;z-index:999;padding-top:20px;}
 .sidebar:hover{width:210px;}
 .sidebar-item{display:flex;align-items:center;gap:14px;color:white !important;text-decoration:none !important;font-size:16px;font-weight:700;padding:14px 18px;border-radius:10px;margin:4px 8px;transition:0.2s;}
-.sidebar-item:link,.sidebar-item:visited{color:white !important;text-decoration:none !important;}
 .sidebar-item:hover{background:#1f1f1f;}
 .sidebar-icon{font-size:20px;width:28px;text-align:center;}
 .sidebar-text{opacity:0;white-space:nowrap;transition:0.2s;}
@@ -200,7 +192,7 @@ img{border-radius:10px;}
 </style>
 """, unsafe_allow_html=True)
 
-# Topbar for mobile
+# Topbar mobile
 if should_use_topbar():
     st.markdown("""
     <style>
@@ -210,7 +202,7 @@ if should_use_topbar():
     </style>
     """, unsafe_allow_html=True)
 
-# Sidebar + Topbar HTML
+# Sidebar HTML
 st.markdown("""
 <div class="topbar">
 <a href="?page=Galerie">🏠</a>
@@ -225,7 +217,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =====================================================
-# RENDER GALLERY
+# GALLERY
 # =====================================================
 def render_gallery(entries, admin=False):
     cols = st.columns(4)
@@ -257,7 +249,7 @@ def render_gallery(entries, admin=False):
 page = st.session_state.page
 
 # =====================================================
-# GALERIE PAGE
+# GALERIE
 # =====================================================
 if page == "Galerie":
     st.title("👋 Willkommen bei Lost&Found")
@@ -276,18 +268,27 @@ if page == "Galerie":
             st.rerun()
 
 # =====================================================
-# UPLOAD PAGE
+# UPLOAD
 # =====================================================
 if page == "Upload":
     st.title("📦 Neues Fundstück")
-    uploaded = st.file_uploader("Bild", type=["jpg","png","jpeg"])
-    camera = st.camera_input("oder Foto")
-    image_file = uploaded if uploaded else camera
+    tab1, tab2 = st.tabs(["Upload", "Kamera"])
+    image_file = None
+    with tab1:
+        uploaded = st.file_uploader("Bild auswählen", type=["jpg","jpeg","png"])
+        if uploaded:
+            image_file = uploaded
+    with tab2:
+        camera = st.camera_input("Foto aufnehmen")
+        if camera:
+            image_file = camera
     if image_file:
         image = Image.open(image_file).convert("RGB")
-        st.image(image, width="stretch")
-        objects, confidence = detect_objects(image)
+        st.subheader("Originalbild")
+        st.image(image, width=300)
+        objects, confidence, annotated = detect_objects(image)
         st.subheader("Erkannte Objekte")
+        st.image(annotated, width=300)
         st.write(objects)
         st.progress(confidence)
         tag = st.selectbox("Farbe", ["rot","blau","grün","gelb","schwarz","weiß"])
@@ -301,7 +302,7 @@ if page == "Upload":
             st.success("Gespeichert")
 
 # =====================================================
-# ADMIN PAGE
+# ADMIN
 # =====================================================
 if page == "Admin":
     st.title("🔐 Admin")
