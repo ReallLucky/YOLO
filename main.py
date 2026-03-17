@@ -210,9 +210,22 @@ st.markdown("""
 <a href="?page=Admin">🔐</a>
 </div>
 <div class="sidebar">
-<a class="sidebar-item" href="?page=Galerie"><span class="sidebar-icon">🏠</span><span class="sidebar-text">Galerie</span></a>
-<a class="sidebar-item" href="?page=Upload"><span class="sidebar-icon">📦</span><span class="sidebar-text">Neues Fundstück</span></a>
-<a class="sidebar-item" href="?page=Admin"><span class="sidebar-icon">🔐</span><span class="sidebar-text">Admin</span></a>
+
+<a class="sidebar-item" href="?page=Galerie" target="_self">
+<span class="sidebar-icon">🏠</span>
+<span class="sidebar-text">Galerie</span>
+</a>
+
+<a class="sidebar-item" href="?page=Upload" target="_self">
+<span class="sidebar-icon">📦</span>
+<span class="sidebar-text">Neuer Fund</span>
+</a>
+
+<a class="sidebar-item" href="?page=Admin" target="_self">
+<span class="sidebar-icon">🔐</span>
+<span class="sidebar-text">Admin</span>
+</a>
+
 </div>
 """, unsafe_allow_html=True)
 
