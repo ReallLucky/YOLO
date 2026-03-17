@@ -42,7 +42,7 @@ if "page" in params:
 # =====================================================
 @st.cache_resource
 def load_model():
-    return YOLO("yolo11s.pt")
+    return YOLO("yolo12s.pt")
 
 model = load_model()
 
